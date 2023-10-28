@@ -115,13 +115,11 @@ const game = (()=>{
 //Attempt 2
 //get page elements
 
-const startButton = document.getElementById("startGame");
-const playerOneInput = document.getElementById("playerOneName");
-const playerTwoInput = document.getElementById("playerTwoName");
-
-
+    const startButton = document.getElementById("startGame");
+    let playerOne="";
+    let playerTwo="";
+    
 //factory function to create player
-
 function newPlayer(name, marker){
     //hidden variable storing score
     let score = 0;
@@ -135,35 +133,53 @@ function newPlayer(name, marker){
 
 
 
-//array for board. 9 elements for 3x3 grid. 3 columns set in css file
-let gameBoard = new Array(9);
 
+
+let winnerDeclared = false;
+let activePlayer = "";
+let remainingMoves = 9;
+
+startButton.addEventListener("click",()=>{
+    drawBoard();
+    console.log("start button");
+    let playerOneInput = document.getElementById("playerOneName").value;
+    let playerTwoInput = document.getElementById("playerTwoName").value;
+    console.log(playerOneInput);
+
+    playerOne = newPlayer(playerOneInput, "X");
+    playerTwo = newPlayer(playerTwoInput, "O");
+    activePlayer = playerOne;
+    
+});
+
+/*const handleClick=()=>{
+    makeMove();
+}*/
+
+let gameBoard = new Array(9);
 //draw the board
 function drawBoard(){
+    //array for board. 9 elements for 3x3 grid. 3 columns set in css file
+    gameBoard=new Array(9);
+    console.table(gameBoard);
+    const squares = document.querySelectorAll(".grid-item");
+    squares.forEach((square) => {
+    square.remove();
+    });
     for(let i=0;i<gameBoard.length;i++){
         const div = document.createElement("div"); //create new div in each iteration of loop, 9 in total
         div.classList.add("grid-item"); //add grid-item class for css styling
         div.setAttribute("id","square"+ i); //give each square a unique ID
-        div.textContent = gameBoard[i]; //display the move stored in the box
+        div.textContent = gameBoard[i]; //display the move stored in the square
         document.getElementById("grid-container").appendChild(div); //add the new div to the page
-    }
+        //add event listeners to each square
+        div.addEventListener("click", ()=>{
+            makeMove(i,div);
+        })
+    };
 }
 
-//play the game
 
-const game = (()=>{
-    //initilise player variables
-
-    const playerOne = newPlayer(playerOneInput, "X");
-    const playerTwo = newPlayer(playerTwoInput, "O");
-
-    //empty the game board
-    gameBoard = [];
-    
-    //intial game state
-    let winnerDeclared = false;
-    let activePlayer = playerOne;
-    let remainingMoves = 9;
 
     //winning combinations to be compared against
     const winningCombo=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -171,23 +187,56 @@ const game = (()=>{
     function checkWinner(){
         //loop through the winningCombo array to check if there's a match for the current player
         winningCombo.forEach((item)=>{
-            if(gameBoard[item[0]] === this.activePlayer.marker && board.gameBoard[item[1]] === this.activePlayer.marker && board.gameBoard[item[2]] === this.activePlayer.marker){
-                console.log(this.activePlayer.name + " wins!");
-                this.winnerDeclared=true;
+            if(gameBoard[item[0]] === activePlayer.marker && gameBoard[item[1]] === activePlayer.marker && gameBoard[item[2]] === activePlayer.marker){
+                console.log(activePlayer.name + " wins!");
+                winnerDeclared=true;
+                //endGame();
             }
         });
     }
-    //switch active player
-    function switchPlayer(){
-        if(thisactivePlayer==playerOne){
-            this.activePlayer=playerTwo;
+
+    function declareDraw(){
+        console.log("draw");
+    }
+
+    /*function endGame(){
+        console.log("endGame runs");
+        for(let i=0;i<gameBoard.length;i++){
+            const div=document.getElementById("square"+i);
+            div.removeEventListener("click",handleClick);
+        }
+    }*/
+
+    function makeMove(i,div){
+        console.log("makeMove runs");
+        console.table[gameBoard];
+        if(gameBoard[i]==playerOne.marker || gameBoard[i]==playerTwo.marker){
+            alert("this square is not free"); //alert user that square cannot be played again
         }
         else{
-            this.activePlayer=playerOne;
+            gameBoard[i]=activePlayer.marker;
+            //console.table(gameBoard);
+            div.textContent=gameBoard[i]; //display value stored in array (x or o)
+            remainingMoves-=1; //reduce number of remaining moves each time a turn is played
+            checkWinner();
+            if(winnerDeclared==false){
+                if(remainingMoves>0){
+                    switchPlayer();
+                }
+                else{
+                    declareDraw();
+                    //endGame();
+                }
+            }
         }
     }
-    return{winnerDeclared,activePlayer,remainingMoves,checkWinner,switchPlayer}
-})();
-
-
-
+    //switch active player
+    function switchPlayer(){
+        console.log("switched");
+        if(activePlayer==playerOne){
+            activePlayer=playerTwo;
+        }
+        else{
+            activePlayer=playerOne;
+        }
+    }
